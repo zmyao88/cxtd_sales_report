@@ -3,7 +3,8 @@ require(lubridate)
 
 # prerp time
 # end_time <- ymd_hms(Sys.time())
-end_time <- ymd_hms('2015-11-11 00:00:00')
+# end_time <- ymd_hms('2015-11-11 00:00:00')
+end_time <- floor_date(today(), unit = 'day')
 rpt_dur <- ddays(1)
 start_time <- end_time - rpt_dur
 pg_end_time <- as.character(end_time)
@@ -24,8 +25,11 @@ coupon_campaign <- tbl(my_db, 'coupon_campaign') %>%
 
 coupon_discount <- coupon %>% 
     inner_join(coupon_campaign) %>% 
-    mutate(coupon_off_rate = coupon_discount_rate / 100) %>% 
-    select(redeem_sales_id, coupon_off_rate) 
+    #mutate(coupon_off_rate = coupon_discount_rate / 100) %>% 
+    collect() %>%
+    group_by(redeem_sales_id) %>% 
+    summarise(coupon_off_rate = 1 - prod(1-coupon_discount_rate/100))
+    # select(redeem_sales_id, coupon_off_rate) 
 
 
 # getting other tables
@@ -66,12 +70,14 @@ report <- sales %>% transmute(member_id, sales_id, shop_id, transaction_datetime
                         total_discount_amount = invoice_chargeable_amount) %>%
                 left_join(sales_point_issue, by = "sales_id") %>%
                 left_join(sales_point_redemption, by = "sales_id") %>%
-                left_join(coupon_discount, by = c("sales_id" = 'redeem_sales_id')) %>%
                 inner_join(member_card_df, by = 'member_id') %>% 
-                mutate(coupon_discount_amount = original_amount * coupon_off_rate,
+                collect() %>%
+                left_join(coupon_discount, by = c("sales_id" = 'redeem_sales_id')) %>%
+                mutate(#coupon_discount_amount = original_amount * coupon_off_rate,
                        point_cashredeem_amount = point_transaction_amount) %>%
-                select(-redeem_sales_id, -point_transaction_amount) %>% 
-                collect() %>% 
+                select(#-redeem_sales_id, 
+                       -point_transaction_amount) %>% 
+                
                 transmute(member_id, sales_id, shop_id, transaction_datetime,
                           original_amount = ifelse(is.na(original_amount), 0, original_amount), 
                           actual_final_amount = ifelse(is.na(actual_final_amount), 0, actual_final_amount), 
@@ -80,7 +86,8 @@ report <- sales %>% transmute(member_id, sales_id, shop_id, transaction_datetime
                           point_redeemed = ifelse(is.na(point_redeemed), 0, point_redeemed), 
                           coupon_off_rate = ifelse(is.na(coupon_off_rate), 0, coupon_off_rate), 
                           member_card_no, 
-                          coupon_discount_amount = ifelse(is.na(coupon_discount_amount), 0, coupon_discount_amount), 
+                          coupon_discount_amount = original_amount * coupon_off_rate,
+                          #coupon_discount_amount = ifelse(is.na(coupon_discount_amount), 0, coupon_discount_amount), 
                           point_cashredeem_amount = ifelse(is.na(point_cashredeem_amount), 0, point_cashredeem_amount) 
                 )
             
@@ -88,6 +95,6 @@ escape.POSIXt <- dplyr:::escape.Date
 db_insert_into( con = my_db$con, 
                 table = "sales_report", 
                 values = report)
-
-View(report)
+print('Success!')
+# View(report)
 

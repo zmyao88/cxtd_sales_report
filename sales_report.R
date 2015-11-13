@@ -27,6 +27,7 @@ coupon_discount <- coupon %>%
     mutate(coupon_off_rate = coupon_discount_rate / 100) %>% 
     select(redeem_sales_id, coupon_off_rate) 
 
+
 # getting other tables
 member_card_df <- tbl(my_db, 'member') %>% select(member_id, member_card_no)
 sales <- tbl(my_db, 'sales') %>% 
@@ -69,14 +70,24 @@ report <- sales %>% transmute(member_id, sales_id, shop_id, transaction_datetime
                 inner_join(member_card_df, by = 'member_id') %>% 
                 mutate(coupon_discount_amount = original_amount * coupon_off_rate,
                        point_cashredeem_amount = point_transaction_amount) %>%
-                select(-redeem_sales_id, -point_transaction_amount)
-View(report)    
+                select(-redeem_sales_id, -point_transaction_amount) %>% 
+                collect() %>% 
+                transmute(member_id, sales_id, shop_id, transaction_datetime,
+                          original_amount = ifelse(is.na(original_amount), 0, original_amount), 
+                          actual_final_amount = ifelse(is.na(actual_final_amount), 0, actual_final_amount), 
+                          total_discount_amount = ifelse(is.na(total_discount_amount), 0, total_discount_amount), 
+                          point_issue = ifelse(is.na(point_issue), 0, point_issue), 
+                          point_redeemed = ifelse(is.na(point_redeemed), 0, point_redeemed), 
+                          coupon_off_rate = ifelse(is.na(coupon_off_rate), 0, coupon_off_rate), 
+                          member_card_no, 
+                          coupon_discount_amount = ifelse(is.na(coupon_discount_amount), 0, coupon_discount_amount), 
+                          point_cashredeem_amount = ifelse(is.na(point_cashredeem_amount), 0, point_cashredeem_amount) 
+                )
             
 escape.POSIXt <- dplyr:::escape.Date
-new_report <- report %>% collect()
 db_insert_into( con = my_db$con, 
                 table = "sales_report", 
-                values = new_report)
+                values = report)
 
 View(report)
 

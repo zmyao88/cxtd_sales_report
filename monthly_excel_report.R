@@ -28,7 +28,7 @@ contract <- tbl(my_db, 'contract') %>%
 
 shop_IDS <- contract %>% select(shop_id) %>% collect()
 
-if (nrow(shop_IDS > 0)){
+if (nrow(shop_IDS) > 0){
     for (current_shop_id in unique(shop_IDS$shop_id)){
         print_xls_output(shop, partner, contract, current_shop_id, my_db, pg_start_time, pg_end_time)
     }

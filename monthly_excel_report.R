@@ -18,7 +18,7 @@ pg_end_time <- as.character(end_time)
 pg_start_time <- as.character(start_time)
 
 # load shop data
-shop <- tbl(my_db, 'shop') 
+shop <- tbl(my_db, 'shop') %>% filter(status == 0)
 partner <- tbl(my_db, 'partner') 
 contract_shop_mapping <- tbl(my_db, 'contract_shop_mapping') %>% select(contract_id, shop_id) 
 contract <- tbl(my_db, 'contract') %>% 
@@ -28,7 +28,7 @@ contract <- tbl(my_db, 'contract') %>%
 
 shop_IDS <- contract %>% select(shop_id) %>% collect()
 
-if nrow(shop_IDS > 0){
+if (nrow(shop_IDS > 0)){
     for (current_shop_id in unique(shop_IDS$shop_id)){
         print_xls_output(shop, partner, contract, current_shop_id, my_db, pg_start_time, pg_end_time)
     }

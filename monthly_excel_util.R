@@ -2,9 +2,11 @@ require(xlsx)
 require(dplyr)
 require(lubridate)
 
-print_xls_output <- function(shop_tbl, current_shop_id, db_con, pg_start_time, pg_end_time){
+print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, current_shop_id, db_con, pg_start_time, pg_end_time){
     
     current_shop <- shop_tbl %>% filter(shop_id == current_shop_id) %>% collect()
+    current_contract <- contract_tbl %>% filter(shop_id == current_shop_id) %>% collect()
+    current_partner <- partner_tbl %>% filter(partner_id == current_contract$partner_id) %>% collect()
     
     # prep report infos
     report_date <- as.character(today())
@@ -18,10 +20,10 @@ print_xls_output <- function(shop_tbl, current_shop_id, db_con, pg_start_time, p
                        year(start_time), 
                        month(start_time, label = T), 
                        sep = "")
-    contact_person <- "*"
-    mailling_address <- "*"
+    contact_person <- current_partner$contact_person_1
+    mailling_address <- current_partner$address_sc
     company_name <- "*"
-    
+
     
     
     # real sales_report data 
@@ -242,7 +244,10 @@ print_xls_output <- function(shop_tbl, current_shop_id, db_con, pg_start_time, p
     
     # prep folder 
     base_dir <- getwd()
-    file_name <- paste(shop_name, current_shop$shop_code, '.xlsx', sep = '')
+    # base_dir <- "/home/ubuntu/src/monthly_sales_report"
+    # base_dir <- "/home/zaiming/src/monthly_sales_report"
+    
+    file_name <- paste(gsub("/", "", x = shop_name), current_shop$shop_code, '.xlsx', sep = '')
     output_dir <- paste(base_dir, 'reports', today(), file_name, sep = '/')
     
     # create dir if not exists

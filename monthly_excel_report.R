@@ -1,4 +1,4 @@
-source('./monthly_excel_util.R')
+source('/home/zaiming/work/xintiandi/project/reports/sales/monthly_excel_util.R')
 
 require(xlsx)
 require(dplyr)
@@ -19,10 +19,17 @@ pg_start_time <- as.character(start_time)
 
 # load shop data
 shop <- tbl(my_db, 'shop') 
-contract <- tbl(my_db, 'contract')
+partner <- tbl(my_db, 'partner') 
+contract_shop_mapping <- tbl(my_db, 'contract_shop_mapping') %>% select(contract_id, shop_id) 
+contract <- tbl(my_db, 'contract') %>% 
+                filter(contract_type %in% c(0,1,2,3) & status == 0) %>% 
+                inner_join(contract_shop_mapping)
+    
 
-shop_IDS <- shop %>% filter(status == 0) %>% select(shop_id) %>% collect()
+shop_IDS <- contract %>% select(shop_id) %>% collect()
 
 for (current_shop_id in unique(shop_IDS$shop_id)){
-    print_xls_output(shop, current_shop_id, my_db, pg_start_time, pg_end_time)
+    print_xls_output(shop, partner, contract, current_shop_id, my_db, pg_start_time, pg_end_time)
 }
+
+print(paste(now(), 'Monthly sales reoprts done!', sep = " "))

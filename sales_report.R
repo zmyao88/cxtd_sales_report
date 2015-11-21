@@ -101,10 +101,10 @@ if (nrow(sales) > 0){
     db_insert_into( con = my_db$con, 
                     table = "sales_report", 
                     values = report)
-    print('Success!')
+    print(paste(now(), 'Success!', sep = " "))
     
 }else{
-    print('no sales today!')
+    print(paste(now(), 'no sales today!', sep = " "))
 }
 
 

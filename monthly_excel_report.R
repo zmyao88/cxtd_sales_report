@@ -34,7 +34,7 @@ if (nrow(shop_IDS > 0)){
     }
     print(paste(now(), 'Monthly sales reoprts done!', sep = " "))
     
-}eles{
+}else{
     print(paste(now(), 'No sales reports for this month', sep = " "))
 }
 

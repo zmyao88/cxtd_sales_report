@@ -1,4 +1,4 @@
-source('/home/zaiming/work/xintiandi/project/reports/sales/monthly_excel_util.R')
+source('~/src/cxtd_sales_report/monthly_excel_util.R')
 
 require(xlsx)
 require(dplyr)
@@ -22,7 +22,7 @@ shop <- tbl(my_db, 'shop') %>% filter(status == 0)
 partner <- tbl(my_db, 'partner') 
 contract_shop_mapping <- tbl(my_db, 'contract_shop_mapping') %>% select(contract_id, shop_id) 
 contract <- tbl(my_db, 'contract') %>% 
-                filter(contract_type %in% c(0,1,2,3) & status == 0) %>% 
+                filter(contract_type %in% c(0,1,2,3,4) & status == 0) %>% 
                 inner_join(contract_shop_mapping)
     
 

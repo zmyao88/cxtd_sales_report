@@ -2,6 +2,10 @@ require(xlsx)
 require(dplyr)
 require(lubridate)
 
+substrRight <- function(x, n){
+    substr(x, nchar(x)-n+1, nchar(x))
+}
+
 print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, current_shop_id, db_con, pg_start_time, pg_end_time){
     
     current_shop <- shop_tbl %>% filter(shop_id == current_shop_id) %>% collect()
@@ -16,13 +20,15 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, current_shop_i
     #shop_name 
     shop_name <- current_shop$name_sc
     shop_address <- current_shop$address_sc
-    report_id <- paste(current_shop$shop_code, 
-                       year(start_time), 
-                       month(start_time, label = T), 
+    report_id <- paste('DZ',
+                       substr(current_shop$shop_code, start = 1, stop = 6),
+                       substr(year(start_time), start = 3, stop = 4),
+                       ifelse(nchar(month(start_time)) == 1, paste("0", month(start_time), sep = ""), month(start_time)), 
+                       substrRight(current_shop$shop_code, n = 3),
                        sep = "")
     contact_person <- current_partner$contact_person_1
     mailling_address <- current_partner$address_sc
-    company_name <- "*"
+    company_name <- current_partner$name_sc
 
     
     
@@ -246,13 +252,17 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, current_shop_i
     base_dir <- getwd()
     # base_dir <- "/home/ubuntu/src/monthly_sales_report"
     # base_dir <- "/home/zaiming/src/monthly_sales_report"
-    
-    file_name <- paste(gsub("/", "", x = shop_name), current_shop$shop_code, '.xlsx', sep = '')
-    output_dir <- paste(base_dir, 'reports', today(), file_name, sep = '/')
+    base_dir <- normalizePath("~/src/monthly_sales_report/")
+    file_name <- paste(current_shop$shop_code, '.xlsx', sep = '')
+    output_dir <- paste(base_dir, 
+                        paste(substr(year(start_time), start = 3, stop = 4),
+                        ifelse(nchar(month(start_time)) == 1, paste("0", month(start_time), sep = ""), month(start_time)), sep = ''), 
+                        file_name, sep = '/')
     
     # create dir if not exists
-    dir.create(file.path(paste(base_dir, 'reports', sep = '/'), today()))
-    
+    if (!file.exists(file.path(output_dir))){
+        dir.create(file.path(dirname(output_dir)))
+    }
     # write.file
     saveWorkbook(outwb, output_dir)
 }

@@ -6,7 +6,7 @@ substrRight <- function(x, n){
     substr(x, nchar(x)-n+1, nchar(x))
 }
 
-print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, current_shop_id, db_con, pg_start_time, pg_end_time){
+print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_members_tbl, current_shop_id, db_con, pg_start_time, pg_end_time){
     
     current_shop <- shop_tbl %>% filter(shop_id == current_shop_id) %>% collect()
     current_contract <- contract_tbl %>% filter(shop_id == current_shop_id) %>% collect()
@@ -36,7 +36,8 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, current_shop_i
     monthly_sales <- tbl(db_con, 'sales_report') %>% 
         filter(transaction_datetime >= pg_start_time &
                    transaction_datetime < pg_end_time &
-                   shop_id == current_shop_id) %>%
+                   shop_id == current_shop_id) %>% 
+        anti_join(suspended_members_tbl, by = "member_id") %>% 
         select(transaction_datetime, member_card_no,
                original_amount, point_cashredeem_amount, 
                coupon_discount_amount, actual_final_amount,

@@ -20,17 +20,17 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     report_title <- "i天地合作商户对账单"
     
     #shop_name 
-    shop_name <- current_shop$name_sc
-    shop_address <- current_shop$address_sc
+    shop_name <- ifelse(is.null(current_shop$name_sc), "", current_shop$name_sc)
+    shop_address <- ifelse(is.null(current_shop$address_sc), "", current_shop$address_sc) 
     report_id <- paste('DZ',
                        substr(current_shop$shop_code, start = 1, stop = 6),
                        substr(year(start_time), start = 3, stop = 4),
                        ifelse(nchar(month(start_time)) == 1, paste("0", month(start_time), sep = ""), month(start_time)), 
                        substrRight(current_shop$shop_code, n = 3),
                        sep = "")
-    contact_person <- current_partner$contact_person_1
-    mailling_address <- current_partner$address_sc
-    company_name <- current_partner$name_sc
+    contact_person <- ifelse(is.null(current_partner$contact_person_1), "", current_partner$contact_person_1)  
+    mailling_address <- ifelse(is.null(current_partner$address_sc), "", current_partner$address_sc) 
+    company_name <- ifelse(is.null(current_partner$name_sc), "", current_partner$name_sc)  
 
     
     
@@ -189,29 +189,66 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     ## Meta data Block
     # rows <- createRow(sheet,rowIndex=c(3:5))
     # cells <- createCell(rows,colIndex=c(1:8))
-    values <- c("公司名称：", "商铺名称：", "联系人：",
-                company_name, shop_name, contact_person,
-                "", "商铺位置：", "邮件地址：",
-                "", shop_address, mailling_address,
-                "", "", "",
-                "", "", "",
-                "账单周期：",  "账单编号：","制单日期：",
-                report_month,  report_id, report_date
-    )
-    # mapply(setCellValue, cells, values)
     
-    bs_style <- CellStyle(outwb) + 
-        Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +
-        Alignment(h="ALIGN_LEFT")
+    meta_value_pt1 <- c("公司名称：", "商铺名称：", "联系人：",
+                company_name, shop_name, contact_person)
+    meta_value_pt2 <- c("商铺位置：", "邮件地址：",
+                shop_address, mailling_address)
+    meta_value_pt3 <- c("账单周期：",  "账单编号：","制单日期：",
+                        report_month,  report_id, report_date)
+    meta_style <- CellStyle(outwb) + 
+                Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +
+                Alignment(h="ALIGN_LEFT")
+                
+    meta_cb1 <- CellBlock(sheet, startRow = 3, 
+                    startColumn = 1,
+                    noRows = 3, 
+                    noColumns = 2)
+    meta_cb2 <- CellBlock(sheet, startRow = 4, 
+                          startColumn = 3,
+                          noRows = 2, 
+                          noColumns = 2)
+    meta_cb3 <- CellBlock(sheet, startRow = 3, 
+                          startColumn = 7,
+                          noRows = 3, 
+                          noColumns = 2)
     
-    bs <- CellBlock(sheet, startRow = 3, 
-              startColumn = 1,
-              noRows = 3, 
-              noColumns = 8)
-    CB.setMatrixData(bs, matrix(values, nrow = 3), 
+    CB.setMatrixData(meta_cb1, matrix(meta_value_pt1, nrow = 3), 
                      startRow = 1, 
                      startColumn = 1, 
-                     cellStyle = bs_style)
+                     cellStyle = meta_style)  
+    CB.setMatrixData(meta_cb2, matrix(meta_value_pt2, nrow = 2), 
+                     startRow = 1, 
+                     startColumn = 1, 
+                     cellStyle = meta_style)  
+    
+    CB.setMatrixData(meta_cb3, matrix(meta_value_pt3, nrow = 3), 
+                     startRow = 1, 
+                     startColumn = 1, 
+                     cellStyle = meta_style)  
+#     values <- c("公司名称：", "商铺名称：", "联系人：",
+#                 company_name, shop_name, contact_person,
+#                 "", "商铺位置：", "邮件地址：",
+#                 "", shop_address, mailling_address,
+#                 "", "", "",
+#                 "", "", "",
+#                 "账单周期：",  "账单编号：","制单日期：",
+#                 report_month,  report_id, report_date
+#     )
+#     # mapply(setCellValue, cells, values)
+#     
+#     bs_style <- CellStyle(outwb) + 
+#         Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +
+#         Alignment(h="ALIGN_LEFT")
+#     
+#     bs <- CellBlock(sheet, startRow = 3, 
+#               startColumn = 1,
+#               noRows = 3, 
+#               noColumns = 8)
+#     CB.setMatrixData(bs, matrix(values, nrow = 3), 
+#                      startRow = 1, 
+#                      startColumn = 1, 
+#                      cellStyle = bs_style)
     
     ## Meta data Block Done
     # set some random shit on upper right corner

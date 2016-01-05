@@ -98,6 +98,8 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     # column and row name style
     csTableRowNames <- CellStyle(outwb) + 
         Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") + 
+        Alignment(wrapText=TRUE,
+                  h="ALIGN_CENTER") + 
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
                pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" ))
@@ -131,9 +133,17 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" )) + 
         Alignment(wrapText=FALSE, horizontal="ALIGN_CENTER")
     
+    csCardNoColumn <- CellStyle(outwb, dataFormat=DataFormat("0")) +
+        Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +  
+        Border(color="black",
+               position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
+               pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" )) + 
+        Alignment(wrapText=FALSE, horizontal="ALIGN_CENTER")
+    
+    
     # column index and correspoinding format
     date_col = list('1' = csDateColumn)
-    int_col = list('2' = csIntColumn,
+    int_col = list('2' = csCardNoColumn,
                    '7' = csIntColumn)
     dec_col = list('3' = csDeclColumn,
                    '4' = csDeclColumn,
@@ -150,18 +160,35 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                  rownamesStyle = csTableRowNames)
     # set column width
     
-    setColumnWidth(sheet, colIndex=c(1, 3, 9), colWidth=15)
-    setColumnWidth(sheet, colIndex=c(2, 4:5, 7:8), colWidth=10)
-    setColumnWidth(sheet, colIndex=c(6), colWidth=12)
+    setColumnWidth(sheet, colIndex=c(1, 3, 9), colWidth=17)
+    setColumnWidth(sheet, colIndex=c(2, 4:5, 7:8), colWidth=12)
+    setColumnWidth(sheet, colIndex=c(6), colWidth=14)
+   
+    ### BIG HACKS HERE 
+    rows <- createRow(sheet,rowIndex=8)
+    magic_cell <- createCell(rows, colIndex=1)
+    setCellStyle(magic_cell[[1,1]], csTableColNames)
     
-    # set Titles
+    magic_cb <- CellBlock(sheet, startRow = 8, 
+                         startColumn = 2,
+                         noRows = 1, 
+                         noColumns = 8)
+    CB.setMatrixData(magic_cb, matrix(my_colnames, nrow = 1), 
+                     startRow = 1, 
+                     startColumn = 1, 
+                     cellStyle = csTableColNames)
+    ### BIG HACKS HERE 
+    
+    ### set Titles
     rows <- createRow(sheet,rowIndex=1)
     sheetTitle <- createCell(rows, colIndex=1)
     setCellValue(sheetTitle[[1,1]], report_title)
     setCellStyle(sheetTitle[[1,1]], csSheetTitle)
+    
     ## set var names col
-    rows <- createRow(sheet,rowIndex=c(3:5))
-    cells <- createCell(rows,colIndex=c(1:8))
+    ## Meta data Block
+    # rows <- createRow(sheet,rowIndex=c(3:5))
+    # cells <- createCell(rows,colIndex=c(1:8))
     values <- c("公司名称：", "商铺名称：", "联系人：",
                 company_name, shop_name, contact_person,
                 "", "商铺位置：", "邮件地址：",
@@ -171,8 +198,22 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                 "账单周期：",  "账单编号：","制单日期：",
                 report_month,  report_id, report_date
     )
-    mapply(setCellValue, cells, values)
+    # mapply(setCellValue, cells, values)
     
+    bs_style <- CellStyle(outwb) + 
+        Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +
+        Alignment(h="ALIGN_LEFT")
+    
+    bs <- CellBlock(sheet, startRow = 3, 
+              startColumn = 1,
+              noRows = 3, 
+              noColumns = 8)
+    CB.setMatrixData(bs, matrix(values, nrow = 3), 
+                     startRow = 1, 
+                     startColumn = 1, 
+                     cellStyle = bs_style)
+    
+    ## Meta data Block Done
     # set some random shit on upper right corner
     rows <- createRow(sheet,rowIndex=7)
     sheetTitle <- createCell(rows, colIndex=9)
@@ -204,23 +245,23 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     #                                     position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
     #                                     pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" ))
     pt1_style <-  CellStyle(outwb) + 
-        Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +  
+        Font(outwb, isBold=TRUE, heightInPoints=10, name = "Microsoft YaHei") +  
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
                pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" ))
     pt2_style <-  CellStyle(outwb, dataFormat=DataFormat("0.0")) + 
-        Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +  
+        Font(outwb, isBold=TRUE, heightInPoints=10, name = "Microsoft YaHei") +  
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
                pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" ))
     pt3_style <-  CellStyle(outwb, dataFormat=DataFormat("0")) + 
-        Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +  
+        Font(outwb, isBold=TRUE, heightInPoints=10, name = "Microsoft YaHei") +  
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
                pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" )) + 
         Alignment(h="ALIGN_RIGHT")
     pt4_style <-  CellStyle(outwb, dataFormat=DataFormat("0.0")) + 
-        Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +  
+        Font(outwb, isBold=TRUE, heightInPoints=10, name = "Microsoft YaHei") +  
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
                pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" ))
@@ -275,9 +316,22 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     note_value <- c("备注：", 
                     "1. 中国新天地每月10日前向合作商户提供上月的积分对账单，合作商户请于每月15日前进行确认并通知中国新天地，逾期则视为对中国新天地所提供的对账单无异议。",
                     "2. 如合作商户对积分对账单有任何问题，请联系中国新天地 企业传讯及推广部 客户关系管理组，邮件: itiandi@xintiandi.com")
-    rows <- createRow(sheet,rowIndex=c(row_position:(row_position+2)))
-    cells <- createCell(rows,colIndex=1)
-    mapply(setCellValue, cells, note_value)
+    # rows <- createRow(sheet,rowIndex=c(row_position:(row_position+2)))
+    # cells <- createCell(rows,colIndex=1)
+    # mapply(setCellValue, cells, note_value)
+    
+    note_style <- CellStyle(outwb) + 
+        Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +
+        Alignment(h="ALIGN_LEFT")
+    
+    note_cb <- CellBlock(sheet, startRow = row_position, 
+              startColumn = 1,
+              noRows = 3, 
+              noColumns = 1)
+    CB.setMatrixData(note_cb, matrix(note_value, nrow = 3), 
+                     startRow = 1, 
+                     startColumn = 1, 
+                     cellStyle = note_style)
     
     
     # confirmation
@@ -287,10 +341,19 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                     "",
                     "",
                     "",
-                    "签字日期_______________________")
-    rows <- createRow(sheet,rowIndex=c(row_position:(row_position+length(confirm_value) - 1)))
-    cells <- createCell(rows,colIndex=1)
-    mapply(setCellValue, cells, confirm_value)
+                    "签字日期_______________________")    
+    
+    confirm_cb <- CellBlock(sheet, startRow = row_position, 
+              startColumn = 1,
+              noRows = 5, 
+              noColumns = 1)
+    CB.setMatrixData(confirm_cb, matrix(confirm_value, nrow = 5), 
+                     startRow = 1, 
+                     startColumn = 1, 
+                     cellStyle = note_style)
+#     rows <- createRow(sheet,rowIndex=c(row_position:(row_position+length(confirm_value) - 1)))
+#     cells <- createCell(rows,colIndex=1)
+#     mapply(setCellValue, cells, confirm_value)
     
     
     

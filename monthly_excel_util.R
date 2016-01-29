@@ -405,12 +405,23 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                               ifelse(nchar(month(start_time)) == 1, paste("0", month(start_time), sep = ""), month(start_time)), sep = ''), 
                         file_name, sep = '/')
     
+    download_dir <- paste(base_dir, 
+                    paste(substr(year(start_time), start = 3, stop = 4),
+                          ifelse(nchar(month(start_time)) == 1, paste("0", month(start_time), sep = ""), month(start_time)), sep = ''), 
+                    "download",
+                    paste(sub("[[:punct:]]", "", shop_name, perl = F), ".xlsx", sep=""), 
+                    sep = '/')
+    
     # create dir if not exists
     if (!file.exists(file.path(output_dir))){
         dir.create(file.path(dirname(output_dir)))
     }
+    if (!file.exists(file.path(download_dir))){
+        dir.create(file.path(dirname(download_dir)))
+    }
     # write.file
     saveWorkbook(outwb, output_dir)
+    saveWorkbook(outwb, download_dir)
     
 }
 

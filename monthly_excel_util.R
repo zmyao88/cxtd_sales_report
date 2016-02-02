@@ -15,7 +15,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     # prep report infos
     report_date <- as.character(today())
     report_month <- paste(format(ymd(pg_start_time), format="%Y%m%d"),
-                          format(ymd(pg_end_time), format="%Y%m%d"),
+                          format(ymd(pg_end_time) - ddays(1), format="%Y%m%d"),
                           sep = "-")
     report_title <- "i天地合作商户对账单"
     
@@ -160,8 +160,8 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                  rownamesStyle = csTableRowNames)
     # set column width
     
-    setColumnWidth(sheet, colIndex=c(1, 3, 9), colWidth=17)
-    setColumnWidth(sheet, colIndex=c(2, 4:5, 7:8), colWidth=12)
+    setColumnWidth(sheet, colIndex=c(1, 2, 3, 9), colWidth=17)
+    setColumnWidth(sheet, colIndex=c(4:5, 7:8), colWidth=12)
     setColumnWidth(sheet, colIndex=c(6), colWidth=14)
    
     ### BIG HACKS HERE 

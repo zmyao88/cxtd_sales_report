@@ -32,7 +32,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     mailling_address <- ifelse(is.null(current_partner$address_sc), "", current_partner$address_sc) 
     company_name <- ifelse(is.null(current_partner$name_sc), "", current_partner$name_sc)  
 
-    
+    locs <- substr(current_shop$shop_code, 1, 3)
     
     # real sales_report data 
     monthly_sales <- tbl(db_con, 'sales_report') %>% 
@@ -406,16 +406,23 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                               ifelse(nchar(month(start_time)) == 1, paste("0", month(start_time), sep = ""), month(start_time)), sep = ''), 
                         file_name, sep = '/')
     
-    download_dir <- paste(base_dir, 
-                    paste(substr(year(start_time), start = 3, stop = 4),
-                          ifelse(nchar(month(start_time)) == 1, paste("0", month(start_time), sep = ""), month(start_time)), sep = ''), 
-                    "download",
+    
+    download_base <- paste(base_dir, 
+                           paste(substr(year(start_time), start = 3, stop = 4),
+                                 ifelse(nchar(month(start_time)) == 1, paste("0", month(start_time), sep = ""), month(start_time)), sep = ''), 
+                           "download",
+                           sep = '/') 
+    download_dir <- paste(download_base,
+                    locs,
                     paste(sub("[[:punct:]]", "", shop_name, perl = F), ".xlsx", sep=""), 
                     sep = '/')
     
     # create dir if not exists
     if (!file.exists(file.path(output_dir))){
         dir.create(file.path(dirname(output_dir)))
+    }
+    if (!file.exists(file.path(download_base))){
+        dir.create(file.path(download_base))
     }
     if (!file.exists(file.path(download_dir))){
         dir.create(file.path(dirname(download_dir)))

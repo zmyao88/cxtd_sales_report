@@ -13,6 +13,11 @@ pg_start_time <- as.character(start_time)
 # pulling data from db
 my_db <- src_postgres(dbname = 'cxtd', host = 'localhost', port = 5432, user = 'cxtd', password = 'xintiandi')
 
+# frozen_user <- tbl(my_db, 'member') %>% 
+#     filter(status != 0) %>%
+#     select(member_id) %>% collect()
+
+
 # getting coupon_discount rate
 coupon <- tbl(my_db, 'coupon') %>% 
     filter(coupon_redeem_datetime >= pg_start_time & 
@@ -45,7 +50,11 @@ if (nrow(coupon_discount) == 0){
 # getting other tables
 member_card_df <- tbl(my_db, 'member') %>% select(member_id, member_card_no)
 sales <- tbl(my_db, 'sales') %>% 
-    filter(transaction_datetime >= pg_start_time & transaction_datetime < pg_end_time)
+    filter(transaction_datetime >= pg_start_time & 
+               transaction_datetime < pg_end_time &
+               invoice_original_amount > 0) # &
+               # !member_id %in% frozen_user$member_id)  
+
 
 # calculate point issue and point redeem
 sales_point_issue <- tbl(my_db, 'sales_point_issue') %>% 

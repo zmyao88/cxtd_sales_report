@@ -8,6 +8,9 @@ substrRight <- function(x, n){
 
 print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_members_tbl, current_shop_id, db_con, pg_start_time, pg_end_time){
     
+    contract_type_mapping <- c('积分', '优惠券', '折扣', '礼品', '非合作')
+    names(contract_type_mapping) <- c(0, 1, 2, 3, 4)
+    
     current_shop <- shop_tbl %>% filter(shop_id == current_shop_id) %>% collect()
     current_contract <- contract_tbl %>% filter(shop_id == current_shop_id) %>% collect()
     current_partner <- partner_tbl %>% filter(partner_id == current_contract$partner_id) %>% collect()
@@ -31,7 +34,8 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     contact_person <- ifelse(is.null(current_partner$contact_person_1), "", current_partner$contact_person_1)  
     mailling_address <- ifelse(is.null(current_partner$address_sc), "", current_partner$address_sc) 
     company_name <- ifelse(is.null(current_partner$name_sc), "", current_partner$name_sc)  
-
+    contract_type <- contract_type_mapping[as.character(current_contract$contract_type)]
+    
     locs <- substr(current_shop$shop_code, 1, 3)
     
     # real sales_report data 
@@ -160,7 +164,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                  rownamesStyle = csTableRowNames)
     # set column width
     
-    setColumnWidth(sheet, colIndex=c(1, 2, 9), colWidth=17)
+    setColumnWidth(sheet, colIndex=c(1, 2, 9), colWidth=20)
     setColumnWidth(sheet, colIndex=c(3), colWidth=20)
     setColumnWidth(sheet, colIndex=c(4:5, 7:8), colWidth=12)
     setColumnWidth(sheet, colIndex=c(6), colWidth=14)
@@ -193,8 +197,8 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     
     meta_value_pt1 <- c("公司名称：", "商铺名称：", "联系人：",
                 company_name, shop_name, contact_person)
-    meta_value_pt2 <- c("商铺位置：", "邮件地址：",
-                shop_address, mailling_address)
+    meta_value_pt2 <- c("合同类型：", "商铺位置：", "邮件地址：", 
+                contract_type, shop_address, mailling_address)
     meta_value_pt3 <- c("账单周期：",  "账单编号：","制单日期：",
                         report_month,  report_id, report_date)
     meta_style <- CellStyle(outwb) + 
@@ -205,9 +209,9 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                     startColumn = 1,
                     noRows = 3, 
                     noColumns = 2)
-    meta_cb2 <- CellBlock(sheet, startRow = 4, 
-                          startColumn = 3,
-                          noRows = 2, 
+    meta_cb2 <- CellBlock(sheet, startRow = 3, 
+                          startColumn = 4,
+                          noRows = 3, 
                           noColumns = 2)
     meta_cb3 <- CellBlock(sheet, startRow = 3, 
                           startColumn = 7,
@@ -218,7 +222,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                      startRow = 1, 
                      startColumn = 1, 
                      cellStyle = meta_style)  
-    CB.setMatrixData(meta_cb2, matrix(meta_value_pt2, nrow = 2), 
+    CB.setMatrixData(meta_cb2, matrix(meta_value_pt2, nrow = 3), 
                      startRow = 1, 
                      startColumn = 1, 
                      cellStyle = meta_style)  

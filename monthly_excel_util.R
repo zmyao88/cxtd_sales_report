@@ -357,7 +357,8 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     
     note_value <- c("备注：", 
                     "1. 中国新天地每月10日前向合作商户提供上月的积分对账单，合作商户请于每月15日前进行确认并通知中国新天地，逾期则视为对中国新天地所提供的对账单无异议。",
-                    "2. 如合作商户对积分对账单有任何问题，请联系中国新天地 企业传讯及推广部 客户关系管理组，邮件: itiandi@xintiandi.com")
+                    "2. 如合作商户对积分对账单有任何问题，请联系中国新天地 企业传讯及推广部 客户关系管理组，邮件: itiandi@xintiandi.com",
+                    "3. 至2017年12月31日止，会员消费所产生的积分成本均由中国新天地承担")
     # rows <- createRow(sheet,rowIndex=c(row_position:(row_position+2)))
     # cells <- createCell(rows,colIndex=1)
     # mapply(setCellValue, cells, note_value)
@@ -368,16 +369,16 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     
     note_cb <- CellBlock(sheet, startRow = row_position, 
               startColumn = 1,
-              noRows = 3, 
+              noRows = 4, 
               noColumns = 1)
-    CB.setMatrixData(note_cb, matrix(note_value, nrow = 3), 
+    CB.setMatrixData(note_cb, matrix(note_value, nrow = 4), 
                      startRow = 1, 
                      startColumn = 1, 
                      cellStyle = note_style)
     
     
     # confirmation
-    row_position <- 8 + nrow(monthly_sales) + 3 + 3 + 4
+    row_position <- 8 + nrow(monthly_sales) + 3 + 4 + 4
     
     confirm_value <- c("商户负责人签字_______________________", 
                     "",

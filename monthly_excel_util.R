@@ -118,7 +118,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
         Fill(backgroundColor="blue")
     
     # define column stytle
-    csDeclColumn <- CellStyle(outwb, dataFormat=DataFormat("0.0")) +  
+    csDeclColumn <- CellStyle(outwb, dataFormat=DataFormat("0.00")) +  
         Font(outwb, isBold=FALSE, heightInPoints=10, name = "Microsoft YaHei") +  
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
@@ -291,7 +291,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
                pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" ))
-    pt2_style <-  CellStyle(outwb, dataFormat=DataFormat("0.0")) + 
+    pt2_style <-  CellStyle(outwb, dataFormat=DataFormat("0.00")) + 
         Font(outwb, isBold=TRUE, heightInPoints=10, name = "Microsoft YaHei") +  
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
@@ -302,7 +302,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),
                pen=c("BORDER_THIN", "BORDER_THIN", "BORDER_THIN", "BORDER_THIN" )) + 
         Alignment(h="ALIGN_RIGHT")
-    pt4_style <-  CellStyle(outwb, dataFormat=DataFormat("0.0")) + 
+    pt4_style <-  CellStyle(outwb, dataFormat=DataFormat("0.00")) + 
         Font(outwb, isBold=TRUE, heightInPoints=10, name = "Microsoft YaHei") +  
         Border(color="black",
                position=c("TOP", "BOTTOM", "LEFT", "RIGHT"),

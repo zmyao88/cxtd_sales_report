@@ -3,7 +3,7 @@ require(lubridate)
 
 # prerp time
 # end_time <- ymd_hms(Sys.time())
-# end_time <- ymd_hms('2015-11-11 00:00:00')
+# end_time <- floor_date(ymd_hms('2015-09-23 01:00:00'), unit = 'day')
 end_time <- floor_date(today(), unit = 'day')
 rpt_dur <- ddays(1)
 start_time <- end_time - rpt_dur

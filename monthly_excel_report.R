@@ -5,7 +5,7 @@ require(dplyr)
 require(lubridate)
 
 
-my_db <- src_postgres(dbname = 'cxtd', host = 'localhost', port = 5432, user = 'cxtd', password = 'xintiandi')
+my_db <- src_postgres(dbname = 'cxtd', host = 'localhost', port = 5432, user = 'cxtd', password = 'CxTd1234!')
 
 # end_time <- ymd_hms(Sys.time())
 # end_time <- ymd_hms('2015-10-01 00:00:00')

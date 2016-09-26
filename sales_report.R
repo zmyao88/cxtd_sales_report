@@ -11,7 +11,7 @@ pg_end_time <- as.character(end_time)
 pg_start_time <- as.character(start_time)
 
 # pulling data from db
-my_db <- src_postgres(dbname = 'cxtd', host = 'localhost', port = 5432, user = 'cxtd', password = 'xintiandi')
+my_db <- src_postgres(dbname = 'cxtd', host = 'localhost', port = 5432, user = 'cxtd', password = 'CxTd1234!')
 
 # frozen_user <- tbl(my_db, 'member') %>% 
 #     filter(status != 0) %>%

@@ -358,7 +358,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     #note_point_disclaimer
     note_value_4 <- ifelse(current_shop$mall_id %in% c(10009, 10010, 10004, 10011),
            "3. 至2017年12月31日止，会员消费所产生的积分成本均由中国新天地承担",
-           "3. 至2018年12月31日止，会员消费所产生的积分成本均由中国新天地承担")
+           "3. 至2018年6月30日止，会员消费所产生的积分成本均由中国新天地承担")
     
     
     note_value <- c("备注：", 

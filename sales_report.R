@@ -50,8 +50,8 @@ if (nrow(coupon_discount) == 0){
 # getting other tables
 member_card_df <- tbl(my_db, 'member') %>% select(member_id, member_card_no)
 sales <- tbl(my_db, 'sales') %>% 
-    filter(transaction_datetime >= pg_start_time & 
-               transaction_datetime < pg_end_time &
+    filter(created_date >= pg_start_time & 
+               created_date < pg_end_time &
                invoice_original_amount > 0) # &
                # !member_id %in% frozen_user$member_id)  
 

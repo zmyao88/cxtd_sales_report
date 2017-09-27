@@ -45,7 +45,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                    shop_id == current_shop_id) %>% 
         select(sales_id, device_id) 
     
-    sales_device_source <- c('积分', '优惠券', '扫码', '暂无数据')
+    sales_device_source <- c('商户端', '补登', '扫码', '暂无数据')
     names(sales_device_source) <- c(1, 2, 3, NA)
     
     # real sales_report data 
@@ -62,12 +62,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                coupon_discount_amount, actual_final_amount,
                point_issue, device_id) %>% 
         mutate(point_cost = point_issue / 100) %>% 
-        collect() %>% 
-        mutate(device_id = plyr::mapvalues(device_id, names(sales_device_source), sales_device_source)) %>% 
-        select(transaction_datetime, member_card_no,
-               original_amount, point_cashredeem_amount, 
-               coupon_discount_amount, actual_final_amount,
-               point_issue, point_cost, device_id)
+        collect() 
 
     # calculate total
     if(nrow(monthly_sales) > 0){
@@ -78,6 +73,15 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                       actual_final_amount_total = sum(actual_final_amount, na.rm = T),
                       point_issue_total = sum(point_issue, na.rm = T),
                       point_cost_total = sum(point_cost, na.rm = T))
+        ######## MAP source
+        monthly_sales <- monthly_sales %>% 
+                                select(transaction_datetime, member_card_no,
+                                       original_amount, point_cashredeem_amount, 
+                                       coupon_discount_amount, actual_final_amount,
+                                       point_issue, point_cost, device_id) %>% 
+                                 mutate(device_id = plyr::mapvalues(device_id,
+                                                               names(sales_device_source),
+                                                               sales_device_source))
     }else{
         # create "fake monthly_total" if there is no monthly_sales_data
         monthly_sales <- data.frame(transaction_datetime = character(),
@@ -87,7 +91,8 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                                     coupon_discount_amount = character(),
                                     actual_final_amount = character(),
                                     point_issue = character(),
-                                    point_cost = character()
+                                    point_cost = character(),
+                                    device_id = character()
         )
         
         monthly_total <- data.frame(original_amount_total = 0,
@@ -100,7 +105,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     
     # Rename column name for presentation purpose
     my_colnames <- c("消费日期", "会员卡号", "消费金额", "积分抵扣金额",
-                     "优惠券抵扣金额", "实际支付金额", "实际累计积分", "实际产生积分成本")
+                     "优惠券抵扣金额", "实际支付金额", "实际累计积分", "实际产生积分成本", "积分来源")
     colnames(monthly_sales) <- my_colnames
     
     
@@ -166,7 +171,8 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     # column index and correspoinding format
     date_col = list('1' = csDateColumn)
     int_col = list('2' = csCardNoColumn,
-                   '7' = csIntColumn)
+                   '7' = csIntColumn,
+                   '9' = csCardNoColumn)
     dec_col = list('3' = csDeclColumn,
                    '4' = csDeclColumn,
                    '5' = csDeclColumn,
@@ -184,7 +190,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     
     setColumnWidth(sheet, colIndex=c(1, 2, 9), colWidth=20)
     setColumnWidth(sheet, colIndex=c(3), colWidth=20)
-    setColumnWidth(sheet, colIndex=c(4:5, 7:8), colWidth=12)
+    setColumnWidth(sheet, colIndex=c(4:5, 7:8, 10), colWidth=12)
     setColumnWidth(sheet, colIndex=c(6), colWidth=14)
    
     ### BIG HACKS HERE 
@@ -195,7 +201,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     magic_cb <- CellBlock(sheet, startRow = 8, 
                          startColumn = 2,
                          noRows = 1, 
-                         noColumns = 8)
+                         noColumns = 9)
     CB.setMatrixData(magic_cb, matrix(my_colnames, nrow = 1), 
                      startRow = 1, 
                      startColumn = 1, 
@@ -276,7 +282,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
     ## Meta data Block Done
     # set some random shit on upper right corner
     rows <- createRow(sheet,rowIndex=7)
-    sheetTitle <- createCell(rows, colIndex=9)
+    sheetTitle <- createCell(rows, colIndex=10)
     setCellStyle(sheetTitle[[1,1]], CellStyle(outwb) + 
                      Font(outwb, isBold=FALSE, heightInPoints=8, name = "Microsoft YaHei") +
                      Alignment(h="ALIGN_RIGHT"))
@@ -289,6 +295,7 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                    monthly_total$coupon_discount_amount_total, monthly_total$actual_final_amount_total)
     pt3_value <- c(monthly_total$point_issue_total)
     pt4_value <- c(monthly_total$point_cost_total)
+    pt5_value <- c("")
     #rows <- createRow(sheet,rowIndex=total_position)
     # cb <- CellBlock(sheet, startRow = total_row_position, startColumn = 1,
     #                 noRows = nrow(monthly_total), 
@@ -345,6 +352,11 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                      startColumn = length(c(pt1_value, pt2_value, pt3_value)) + 1,
                      noRows = 1, 
                      noColumns = length(pt4_value))
+    # new HACKS
+    pt5 <- CellBlock(sheet, startRow = total_row_position, 
+                     startColumn = length(c(pt1_value, pt2_value, pt3_value, pt4_value)) + 1,
+                     noRows = 1, 
+                     noColumns = length(pt5_value))
     
     
     
@@ -364,6 +376,10 @@ print_xls_output <- function(shop_tbl, partner_tbl, contract_tbl, suspended_memb
                      startRow = 1, 
                      startColumn = 1, 
                      cellStyle = pt4_style)
+    CB.setMatrixData(pt5, matrix(pt5_value, nrow = 1), 
+                 startRow = 1, 
+                 startColumn = 1, 
+                 cellStyle = pt3_style)
     
     
     # mapply(setCellStyle, total_cells[1,], total_cells_style)

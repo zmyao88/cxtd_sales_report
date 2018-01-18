@@ -22,6 +22,7 @@ shop <- tbl(my_db, 'shop') %>% filter(status == 0)
 partner <- tbl(my_db, 'partner') 
 contract_shop_mapping <- tbl(my_db, 'contract_shop_mapping') %>% select(contract_id, shop_id) 
 contract <- tbl(my_db, 'contract') %>% 
+                filter(contract_end_datetime >= pg_start_time) %>% 
                 filter(contract_type %in% c(0,1,2,3,4) & status == 0) %>% 
                 inner_join(contract_shop_mapping)
 # frozen members
